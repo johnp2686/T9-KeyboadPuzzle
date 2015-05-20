@@ -1,0 +1,223 @@
+<html>
+<head>
+<style>
+#phone button{
+    height: 50px;
+    width: 75px;
+}
+#phone button span{
+    display: block;
+    margin-top: 5px;
+    font-size: 10px;
+}
+#result{
+    width: 225px;
+    height: 25px;
+    margin-left:2px;
+}
+</style>
+</head>
+<body>
+<table id="phone">
+    <tr>
+        <td colspan="3">
+            <input type="text" id="result" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button data-value="1" class="key">1
+                <span>. , !</span>
+            </button>
+        </td>
+        <td>
+            <button data-value="2" class="key">2
+                <span>a b c</span>
+            </button>
+        </td>
+        <td>
+            <button data-value="3" class="key">3
+                <span>d e f</span>
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button data-value="4" class="key">4
+                <span>g h i</span>
+            </button>
+        </td>
+        <td>
+            <button data-value="5" class="key">5
+                <span>j k l</span>
+            </button>
+        </td>
+        <td>
+            <button data-value="6" class="key">6
+                <span>m n o</span>
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td><button data-value="7" class="key">7
+            <span>p q r s</span>
+            </button>
+        </td>
+        <td>
+            <button data-value="8" class="key">8
+                <span>t u v</span>
+            </button>
+        </td>
+        <td>
+            <button data-value="9" class="key">9
+                <span>w x y z</span>
+            </button>
+        </td>
+    </tr>
+    <tr>
+        <td><button data-value="*" class="key">*</button></td>
+        <td><button data-value="0" class="key">0</button></td>
+        <td><button data-value="#" class="key">#</button></td>
+    </tr>
+</table>
+<script src="js/jquery-1.10.2.min.js"></script>
+<script src="js/jquery.longpress.js"></script>
+<script>
+// Implemeted T9 keyboard using Jquery 
+// mouseup time and mouseleave time 
+// Get mouse click delay time mouse up starTime value, mouseleave endTime used to print value in result textbox
+
+$(document).ready(function() {
+    var values = [];    //array of values
+    var longPressData;
+    var current = "";  //empty string
+    var count = 1;     //mouse click count declared
+    var startTime;
+    var difference_MS;
+    var start;
+    var endTime;
+    var currentDate;
+
+    $("#phone").find("button").click(function(event) {
+
+        if ($("#result").val()) {
+            console.log("privious click value assign to result"); //user click privous value assign to result
+        } else {
+            values = [];
+            current = "";
+            count = 1;
+        }
+
+        if (longPressData) {
+            longPressData = "";
+            startTime = "";
+
+        } else {
+
+            //Get current click text and replace without whitespaces and split values
+
+            var span_value = $(event.currentTarget).text().replace(/\s/g, "");
+            var splitValue = span_value.split("");
+            if (current) {
+                //current=splitValue;
+                var convetedCurrent = current.join("");
+                var convetedSplit = splitValue.join("");
+                if (convetedCurrent == convetedSplit) {
+
+                    //Get mouse click delay time mouse up starTime value, mouseleave endTime converted to seconds
+                    currentDate = new Date();
+                    endTime = currentDate.getTime();
+                    difference_MS = startTime - endTime;
+                    difference_MS = difference_MS / 1000;
+                    startTime = endTime;
+                    var seconds = Math.floor(difference_MS % 60);
+                    // mouse delay seconds while clicking the event
+                    if (seconds > -2) {
+
+                        values.pop();
+                        var countlength = count + 1;
+                        if (current.length > countlength) {
+                            count = count + 1;
+                            values.push(current[count]);
+                            $("#result").val(values.join(""));
+
+                        } else {
+                            //mouse click more than 4 click 
+
+                            console.log("mouse click more than 4 click");
+                            count = 1;
+                            values.push(current[count]);
+                            $("#result").val(values.join(""));
+                        }
+
+                    } else {
+
+                        count = 1;
+                        values.push(current[count]);
+                        $("#result").val(values.join(""));
+                    }
+
+                } else {
+                    //click new button
+                    console.log("click New Button");
+                    count = 1;
+                    current = splitValue;
+                    currentDate = new Date();
+                    startTime = currentDate.getTime();
+                    values.push(current[count]);
+                    $("#result").val(values.join(""));
+                }
+
+            } else {
+                //first mouse click
+
+                console.log("first mouse click");
+                currentDate = new Date();
+                startTime = currentDate.getTime();
+                current = splitValue;
+                values.push(current[count]);
+                $("#result").val(values.join(""));
+            }
+
+        }
+
+
+    });
+    //Long press button get only numbers
+    var longPress = 300;
+    //Get mousedown gettime value
+    $("#phone").find("button").on("mousedown", function(event) {
+        start = new Date().getTime();
+    });
+    //Get mouseleave gettime value
+    $("#phone").find("button").on("mouseleave", function(event) {
+        start = 0;  //start time initilize 0
+    });
+
+
+    $("#phone").find("button").on("mouseup", function(event) {
+        if (new Date().getTime() >= (start + longPress)) {
+
+            if ($("#result").val()) {
+                //privious click value assign result
+                console.log("privious click value assign to result"); //user click privous value assign to result
+            } else {
+
+                values = [];
+                current = "";
+                count = 1;
+            }
+
+            event.preventDefault();
+            longPressData = $(event.currentTarget).data("value");
+            console.log("longpress " + longPressData);
+            values.push(longPressData); //Push value to current data value
+            $("#result").val(values.join("")); //out put
+        }
+
+    });
+
+});
+</script>
+</body>
+</html>
